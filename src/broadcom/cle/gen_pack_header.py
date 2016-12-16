@@ -321,13 +321,32 @@ class Group(object):
             print("")
             continue
 
+    def get_address_overlap_bits(self, address_field):
+        start = address_field.start
+        end = address_field.end
+
+        mask = 0
+        for field in self.fields:
+            if field == address_field:
+                continue
+
+            if field.start >= start and field.start <= end:
+                size = field.end - field.start + 1
+                mask |= ((1 << size) - 1) << (field.start - start)
+
+        return mask
+
     def emit_unpack_function(self, start):
         for field in self.fields:
             if field.type != "mbo":
                 convert = None
 
                 if field.type == "address":
-                    convert = "__gen_unpack_address"
+                    mask = self.get_address_overlap_bits(field)
+                    print("   values->%s = __gen_unpack_address(cl, %s, %s, 0x%08x);" % \
+                              (field.name, \
+                              start + field.start, start + field.end, mask))
+                    continue
                 elif field.type == "uint":
                     convert = "__gen_unpack_uint"
                 elif field.type == "int":
@@ -350,6 +369,35 @@ class Group(object):
                       (field.name, convert, \
                        start + field.start, start + field.end))
 
+    def emit_clif_dump_function(self, start):
+        for field in sorted(self.fields, key=lambda x: x.start):
+            name = field.name
+
+            if field.type == "mbo":
+                continue
+
+            # Handled in the caller.
+            if field.name == "opcode":
+                continue
+
+            convert = None
+            convert_args = "values->%s" % name
+
+            if field.type == "address":
+                convert = "XXX: 0x%08x"
+                convert_args = "__gen_address_offset(&values->%s)" % name
+            elif field.type in ["uint", "bool"]:
+                convert = "%u"
+            elif field.type == "int":
+                convert = "%d"
+            elif field.type == "float":
+                convert = "%f"
+            else:
+                print('   out(clif, "   XXX: unhandled field %s, type %s\n");' % (name, field.type))
+                continue
+
+            print('   out(clif, "   /* %s */ %s\\n", %s);' % \
+                      (field.name, convert, convert_args));
 
 class Value(object):
     def __init__(self, attrs):
@@ -473,6 +521,17 @@ class Parser(object):
 
         print("}\n#endif\n")
 
+    def emit_clif_dump_function(self, name, group):
+        print("#ifdef CLIF_DUMP")
+        print("static inline void")
+        print("%s_clif_dump(struct clif_dump *clif, struct %s * restrict values)\n{" %
+              (name, name))
+        print('   out(clif, "%s\\n");' % name);
+
+        group.emit_clif_dump_function(0)
+
+        print("}\n#endif /* CLIF_DUMP */\n")
+
     def emit_packet(self):
         name = self.packet
 
@@ -496,6 +555,7 @@ class Parser(object):
         self.emit_template_struct(self.packet, self.group)
         self.emit_pack_function(self.packet, self.group)
         self.emit_unpack_function(self.packet, self.group)
+        self.emit_clif_dump_function(self.packet, self.group)
 
         print('')
 
@@ -518,6 +578,7 @@ class Parser(object):
         self.emit_template_struct(self.struct, self.group)
         self.emit_pack_function(self.struct, self.group)
         self.emit_unpack_function(self.struct, self.group)
+        self.emit_clif_dump_function(self.struct, self.group)
 
         print('')
 

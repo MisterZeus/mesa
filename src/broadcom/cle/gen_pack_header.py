@@ -341,12 +341,14 @@ class Group(object):
             if field.type != "mbo":
                 convert = None
 
+                args = []
+                args.append('cl')
+                args.append(str(start + field.start))
+                args.append(str(start + field.end))
+
                 if field.type == "address":
-                    mask = self.get_address_overlap_bits(field)
-                    print("   values->%s = __gen_unpack_address(cl, %s, %s, 0x%08x);" % \
-                              (field.name, \
-                              start + field.start, start + field.end, mask))
-                    continue
+                    args.append(str(self.get_address_overlap_bits(field)))
+                    convert = '__gen_unpack_address'
                 elif field.type == "uint":
                     convert = "__gen_unpack_uint"
                 elif field.type == "int":
@@ -358,16 +360,17 @@ class Group(object):
                 elif field.type == "offset":
                     convert = "__gen_unpack_offset"
                 elif field.type == 'ufixed':
+                    args.append(str(field.fractional_size))
                     convert = "__gen_unpack_ufixed"
                 elif field.type == 'sfixed':
+                    args.append(str(field.fractional_size))
                     convert = "__gen_unpack_sfixed"
                 else:
                     print("/* unhandled field %s, type %s */\n" % (name, field.type))
                     s = None
 
-                print("   values->%s = %s(cl, %s, %s);" % \
-                      (field.name, convert, \
-                       start + field.start, start + field.end))
+                print("   values->%s = %s(%s);" % \
+                      (field.name, convert, ', '.join(args)))
 
     def emit_clif_dump_function(self, start):
         for field in sorted(self.fields, key=lambda x: x.start):
@@ -390,7 +393,7 @@ class Group(object):
                 convert = "%u"
             elif field.type == "int":
                 convert = "%d"
-            elif field.type == "float":
+            elif field.type in ["float", "sfixed", "ufixed"]:
                 convert = "%f"
             else:
                 print('   out(clif, "   XXX: unhandled field %s, type %s\n");' % (name, field.type))

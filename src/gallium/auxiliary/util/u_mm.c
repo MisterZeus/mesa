@@ -183,7 +183,6 @@ u_mmAllocMem(struct mem_block *heap, int size, int align2, int startSearch)
 
    assert(size >= 0);
    assert(align2 >= 0);
-   assert(align2 <= 12); /* sanity check, 2^12 (4KB) enough? */
 
    if (!heap || align2 < 0 || size <= 0)
       return NULL;

@@ -11,5 +11,6 @@ BROADCOM_GENXML_XML_FILES = \
 BROADCOM_FILES = \
 	cle/v3d_packet_helpers.h \
 	cle/vc5_packet.h \
+	include/v3d_chip.h \
 	$()
 

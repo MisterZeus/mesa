@@ -1,3 +1,15 @@
+if USE_VC5_SIMULATOR
+AM_CPPFLAGS += \
+       -I/home/anholt/src/v3dv3/libs/sim/v3d_hw \
+       -I/home/anholt/src/v3dv3/ \
+       -I/home/anholt/src/v3dv3/libs/core/vcos/pthreads \
+       -I/home/anholt/src/v3dv3/libs/core/vcos/include \
+       $(NULL)
+libbroadcom_la_LDFLAGS = \
+	-L/home/anholt/src/vc5-prefix/lib \
+	-lv3d_hw_auto_shared  \
+	$(NULL)
+endif
 
 libbroadcom_la_SOURCES = $(BROADCOM_FILES)
 

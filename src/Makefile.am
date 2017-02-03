@@ -84,6 +84,10 @@ endif
 
 if HAVE_GALLIUM_VC4
 SUBDIRS += broadcom
+else
+if HAVE_GALLIUM_VC5
+SUBDIRS += broadcom
+endif
 endif
 
 if NEED_OPENGL_COMMON

@@ -35,6 +35,9 @@ struct pipe_screen *
 pipe_vc4_create_screen(int fd, unsigned flags);
 
 struct pipe_screen *
+pipe_vc5_create_screen(int fd, unsigned flags);
+
+struct pipe_screen *
 pipe_pl111_create_screen(int fd, unsigned flags);
 
 struct pipe_screen *

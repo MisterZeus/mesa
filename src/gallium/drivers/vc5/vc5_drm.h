@@ -1,0 +1,189 @@
+/*
+ * Copyright © 2014-2017 Broadcom
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+#ifndef _VC5_DRM_H_
+#define _VC5_DRM_H_
+
+#include "drm.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+#define DRM_VC5_SUBMIT_CL                         0x00
+#define DRM_VC5_WAIT_SEQNO                        0x01
+#define DRM_VC5_WAIT_BO                           0x02
+#define DRM_VC5_CREATE_BO                         0x03
+#define DRM_VC5_MMAP_BO                           0x04
+#define DRM_VC5_CREATE_SHADER_BO                  0x05
+#define DRM_VC5_GET_HANG_STATE                    0x06
+#define DRM_VC5_GET_PARAM                         0x07
+
+#define DRM_IOCTL_VC5_SUBMIT_CL           DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_SUBMIT_CL, struct drm_vc5_submit_cl)
+#define DRM_IOCTL_VC5_WAIT_SEQNO          DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_WAIT_SEQNO, struct drm_vc5_wait_seqno)
+#define DRM_IOCTL_VC5_WAIT_BO             DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_WAIT_BO, struct drm_vc5_wait_bo)
+#define DRM_IOCTL_VC5_CREATE_BO           DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_CREATE_BO, struct drm_vc5_create_bo)
+#define DRM_IOCTL_VC5_MMAP_BO             DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_MMAP_BO, struct drm_vc5_mmap_bo)
+#define DRM_IOCTL_VC5_CREATE_SHADER_BO    DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_CREATE_SHADER_BO, struct drm_vc5_create_shader_bo)
+#define DRM_IOCTL_VC5_GET_HANG_STATE      DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_GET_HANG_STATE, struct drm_vc5_get_hang_state)
+#define DRM_IOCTL_VC5_GET_PARAM           DRM_IOWR(DRM_COMMAND_BASE + DRM_VC5_GET_PARAM, struct drm_vc5_get_param)
+
+struct drm_vc5_submit_rcl_surface {
+	__u32 hindex; /* Handle index, or ~0 if not present. */
+	__u32 offset; /* Offset to start of buffer. */
+	/*
+	 * Bits for either render config (color_write) or load/store packet.
+	 * Bits should all be 0 for MSAA load/stores.
+	 */
+	__u16 bits;
+
+#define VC5_SUBMIT_RCL_SURFACE_READ_IS_FULL_RES		(1 << 0)
+	__u16 flags;
+};
+
+/**
+ * struct drm_vc5_submit_cl - ioctl argument for submitting commands to the 3D
+ * engine.
+ *
+ * Drivers typically use GPU BOs to store batchbuffers / command lists and
+ * their associated state.  However, because the VC5 lacks an MMU, we have to
+ * do validation of memory accesses by the GPU commands.  If we were to store
+ * our commands in BOs, we'd need to do uncached readback from them to do the
+ * validation process, which is too expensive.  Instead, userspace accumulates
+ * commands and associated state in plain memory, then the kernel copies the
+ * data to its own address space, and then validates and stores it in a GPU
+ * BO.
+ */
+struct drm_vc5_submit_cl {
+	/* Pointer to the binner command list.
+	 *
+	 * This is the first set of commands executed, which runs the
+	 * coordinate shader to determine where primitives land on the screen,
+	 * then writes out the state updates and draw calls necessary per tile
+	 * to the tile allocation BO.
+	 */
+	__u32 bcl_start;
+
+	 /** End address of the BCL (first byte after the BCL) */
+        __u32 bcl_end;
+
+	/* Offset of the render command list.
+	 *
+	 * This is the second set of commands executed, which will either
+	 * execute the tiles that have been set up by the BCL, or a fixed set
+	 * of tiles (in the case of RCL-only blits).
+	 */
+	__u32 rcl_start;
+
+	 /** End address of the RCL (first byte after the RCL) */
+        __u32 rcl_end;
+
+	/* Pointer to a u32 array of the BOs that are referenced by the job.
+	 */
+	__u64 bo_handles;
+
+	/* Number of BO handles passed in (size is that times 4). */
+	__u32 bo_handle_count;
+
+	__u32 flags;
+
+	/* Returned value of the seqno of this render job (for the
+	 * wait ioctl).
+	 */
+	__u64 seqno;
+};
+
+/**
+ * struct drm_vc5_wait_seqno - ioctl argument for waiting for
+ * DRM_VC5_SUBMIT_CL completion using its returned seqno.
+ *
+ * timeout_ns is the timeout in nanoseconds, where "0" means "don't
+ * block, just return the status."
+ */
+struct drm_vc5_wait_seqno {
+	__u64 seqno;
+	__u64 timeout_ns;
+};
+
+/**
+ * struct drm_vc5_wait_bo - ioctl argument for waiting for
+ * completion of the last DRM_VC5_SUBMIT_CL on a BO.
+ *
+ * This is useful for cases where multiple processes might be
+ * rendering to a BO and you want to wait for all rendering to be
+ * completed.
+ */
+struct drm_vc5_wait_bo {
+	__u32 handle;
+	__u32 pad;
+	__u64 timeout_ns;
+};
+
+/**
+ * struct drm_vc5_create_bo - ioctl argument for creating VC5 BOs.
+ *
+ * There are currently no values for the flags argument, but it may be
+ * used in a future extension.
+ */
+struct drm_vc5_create_bo {
+	__u32 size;
+	__u32 flags;
+	/** Returned GEM handle for the BO. */
+	__u32 handle;
+	__u32 offset;
+};
+
+/**
+ * struct drm_vc5_mmap_bo - ioctl argument for mapping VC5 BOs.
+ *
+ * This doesn't actually perform an mmap.  Instead, it returns the
+ * offset you need to use in an mmap on the DRM device node.  This
+ * means that tools like valgrind end up knowing about the mapped
+ * memory.
+ *
+ * There are currently no values for the flags argument, but it may be
+ * used in a future extension.
+ */
+struct drm_vc5_mmap_bo {
+	/** Handle for the object being mapped. */
+	__u32 handle;
+	__u32 flags;
+	/** offset into the drm node to use for subsequent mmap call. */
+	__u64 offset;
+};
+
+#define DRM_VC5_PARAM_V3D_IDENT0		0
+#define DRM_VC5_PARAM_V3D_IDENT1		1
+#define DRM_VC5_PARAM_V3D_IDENT2		2
+
+struct drm_vc5_get_param {
+	__u32 param;
+	__u32 pad;
+	__u64 value;
+};
+
+#if defined(__cplusplus)
+}
+#endif
+
+#endif /* _VC5_DRM_H_ */

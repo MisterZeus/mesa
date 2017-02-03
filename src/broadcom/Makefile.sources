@@ -18,5 +18,6 @@ BROADCOM_FILES = \
 	qpu/vc5_qpu_defines.h \
 	qpu/vc5_qpu_disasm.c \
 	qpu/vc5_qpu_disasm.h \
+	qpu/vc5_qpu_validate.c \
 	$()
 

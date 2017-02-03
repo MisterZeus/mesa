@@ -14,6 +14,16 @@ BROADCOM_FILES = \
 	include/v3d_chip.h \
 	clif/clif_dump.c \
 	clif/clif_dump.h \
+	nir/vc5_compiler.h \
+	nir/nir_to_qir.c \
+	nir/qir.c \
+	nir/qir_live_variables.c \
+	nir/qir_lower_uniforms.c \
+	nir/qir_opt_copy_propagate.c \
+	nir/qir_opt_dead_code.c \
+	nir/qir_register_allocate.c \
+	nir/qir_to_qpu.c \
+	nir/vc5_nir_lower_io.c \
 	qpu/qpu_instr.c \
 	qpu/qpu_instr.h \
 	qpu/qpu_pack.c \

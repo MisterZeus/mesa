@@ -12,6 +12,8 @@ BROADCOM_FILES = \
 	cle/v3d_packet_helpers.h \
 	cle/vc5_packet.h \
 	include/v3d_chip.h \
+	clif/clif_dump.c \
+	clif/clif_dump.h \
 	qpu/qpu_instr.c \
 	qpu/qpu_instr.h \
 	qpu/qpu_pack.c \

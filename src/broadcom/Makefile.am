@@ -22,6 +22,15 @@
 
 include Makefile.sources
 
+AM_CPPFLAGS = \
+	$(DEFINES) \
+	$(VALGRIND_CFLAGS) \
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/broadcom/ \
+	-I$(top_srcdir)/src/broadcom/include \
+	$(NULL)
+
 lib_LTLIBRARIES =
 check_LTLIBRARIES =
 noinst_DATA =
@@ -34,9 +43,12 @@ BUILT_SOURCES =
 CLEANFILES =
 EXTRA_DIST = $(BROADCOM_FILES)
 
+noinst_LTLIBRARIES = libbroadcom.la
+
 MKDIR_GEN = $(AM_V_at)$(MKDIR_P) $(@D)
 PYTHON_GEN = $(AM_V_GEN)$(PYTHON2) $(PYTHON_FLAGS)
 
 include Makefile.genxml.am
+include Makefile.vc5.am
 
 CLEANFILES += $(BUILT_SOURCES)

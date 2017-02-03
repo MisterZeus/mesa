@@ -1,0 +1,16 @@
+
+libbroadcom_la_SOURCES = $(BROADCOM_FILES)
+
+libbroadcom_la_LIBADD = \
+	$(VC5_LIBS) \
+	$(NULL)
+
+check_PROGRAMS = \
+	qpu/tests/vc5_qpu_disasm \
+	$(NULL)
+
+LDADD = \
+	libbroadcom.la \
+	$(NULL)
+
+TESTS = $(check_PROGRAMS)

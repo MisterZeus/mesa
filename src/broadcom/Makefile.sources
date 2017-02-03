@@ -12,5 +12,11 @@ BROADCOM_FILES = \
 	cle/v3d_packet_helpers.h \
 	cle/vc5_packet.h \
 	include/v3d_chip.h \
+	qpu/qpu_instr.c \
+	qpu/qpu_instr.h \
+	qpu/qpu_pack.c \
+	qpu/vc5_qpu_defines.h \
+	qpu/vc5_qpu_disasm.c \
+	qpu/vc5_qpu_disasm.h \
 	$()
 

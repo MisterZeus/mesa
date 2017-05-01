@@ -391,6 +391,9 @@ enum pipe_format {
 
    PIPE_FORMAT_P016                    = 307,
 
+   PIPE_FORMAT_A1B5G5R5_UNORM          = 308,
+   PIPE_FORMAT_X1B5G5R5_UNORM          = 309,
+
    PIPE_FORMAT_COUNT
 };
 

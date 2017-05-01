@@ -79,6 +79,8 @@ st_mesa_format_to_pipe_format(const struct st_context *st, mesa_format mesaForma
       return PIPE_FORMAT_XRGB8888_UNORM;
    case MESA_FORMAT_B5G5R5A1_UNORM:
       return PIPE_FORMAT_B5G5R5A1_UNORM;
+   case MESA_FORMAT_A1B5G5R5_UNORM:
+      return PIPE_FORMAT_A1B5G5R5_UNORM;
    case MESA_FORMAT_B4G4R4A4_UNORM:
       return PIPE_FORMAT_B4G4R4A4_UNORM;
    case MESA_FORMAT_B5G6R5_UNORM:
@@ -407,6 +409,8 @@ st_mesa_format_to_pipe_format(const struct st_context *st, mesa_format mesaForma
       return PIPE_FORMAT_B4G4R4X4_UNORM;
    case MESA_FORMAT_B5G5R5X1_UNORM:
       return PIPE_FORMAT_B5G5R5X1_UNORM;
+   case MESA_FORMAT_X1B5G5R5_UNORM:
+      return PIPE_FORMAT_X1B5G5R5_UNORM;
    case MESA_FORMAT_R8G8B8X8_SNORM:
       return PIPE_FORMAT_RGBX8888_SNORM;
    case MESA_FORMAT_X8B8G8R8_SNORM:
@@ -556,6 +560,8 @@ st_pipe_format_to_mesa_format(enum pipe_format format)
       return MESA_FORMAT_X8R8G8B8_UNORM;
    case PIPE_FORMAT_B5G5R5A1_UNORM:
       return MESA_FORMAT_B5G5R5A1_UNORM;
+   case PIPE_FORMAT_A1B5G5R5_UNORM:
+      return MESA_FORMAT_A1B5G5R5_UNORM;
    case PIPE_FORMAT_B4G4R4A4_UNORM:
       return MESA_FORMAT_B4G4R4A4_UNORM;
    case PIPE_FORMAT_B5G6R5_UNORM:
@@ -886,6 +892,8 @@ st_pipe_format_to_mesa_format(enum pipe_format format)
       return MESA_FORMAT_B4G4R4X4_UNORM;
    case PIPE_FORMAT_B5G5R5X1_UNORM:
       return MESA_FORMAT_B5G5R5X1_UNORM;
+   case PIPE_FORMAT_X1B5G5R5_UNORM:
+      return MESA_FORMAT_X1B5G5R5_UNORM;
    case PIPE_FORMAT_RGBX8888_SNORM:
       return MESA_FORMAT_R8G8B8X8_SNORM;
    case PIPE_FORMAT_XBGR8888_SNORM:
@@ -1058,7 +1066,7 @@ test_format_conversion(struct st_context *st)
 struct format_mapping
 {
    GLenum glFormats[18];       /**< list of GLenum formats, 0-terminated */
-   enum pipe_format pipeFormats[13]; /**< list of pipe formats, 0-terminated */
+   enum pipe_format pipeFormats[14]; /**< list of pipe formats, 0-terminated */
 };
 
 
@@ -1145,7 +1153,8 @@ static const struct format_mapping format_map[] = {
    },
    {
       { GL_RGB5_A1, 0 },
-      { PIPE_FORMAT_B5G5R5A1_UNORM, DEFAULT_RGBA_FORMATS }
+      { PIPE_FORMAT_B5G5R5A1_UNORM, PIPE_FORMAT_A1B5G5R5_UNORM,
+        DEFAULT_RGBA_FORMATS }
    },
    {
       { GL_R3_G3_B2, 0 },
@@ -1159,7 +1168,8 @@ static const struct format_mapping format_map[] = {
    },
    {
       { GL_RGB5 },
-      { PIPE_FORMAT_B5G5R5X1_UNORM, PIPE_FORMAT_B5G5R5A1_UNORM,
+      { PIPE_FORMAT_B5G5R5X1_UNORM, PIPE_FORMAT_X1B5G5R5_UNORM,
+        PIPE_FORMAT_B5G5R5A1_UNORM, PIPE_FORMAT_A1B5G5R5_UNORM,
         DEFAULT_RGB_FORMATS }
    },
    {

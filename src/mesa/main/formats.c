@@ -992,6 +992,7 @@ _mesa_uncompressed_format_to_type_and_comps(mesa_format format,
 
    case MESA_FORMAT_A1B5G5R5_UNORM:
    case MESA_FORMAT_A1B5G5R5_UINT:
+   case MESA_FORMAT_X1B5G5R5_UNORM:
       *datatype = GL_UNSIGNED_SHORT_5_5_5_1;
       *comps = 4;
       return;
@@ -2116,6 +2117,7 @@ _mesa_format_matches_format_and_type(mesa_format mesa_format,
 
    case MESA_FORMAT_B4G4R4X4_UNORM:
    case MESA_FORMAT_B5G5R5X1_UNORM:
+   case MESA_FORMAT_X1B5G5R5_UNORM:
    case MESA_FORMAT_R8G8B8X8_SNORM:
    case MESA_FORMAT_R8G8B8X8_SRGB:
    case MESA_FORMAT_X8B8G8R8_SRGB:

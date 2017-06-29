@@ -34,8 +34,6 @@
 #include "vc4_resource.h"
 #include "vc4_tiling.h"
 
-static bool miptree_debug = false;
-
 static bool
 vc4_resource_bo_alloc(struct vc4_resource *rsc)
 {
@@ -43,7 +41,7 @@ vc4_resource_bo_alloc(struct vc4_resource *rsc)
         struct pipe_screen *pscreen = prsc->screen;
         struct vc4_bo *bo;
 
-        if (miptree_debug) {
+        if (vc4_debug & VC4_DEBUG_SURFACE) {
                 fprintf(stderr, "alloc %p: size %d + offset %d -> %d\n",
                         rsc,
                         rsc->slices[0].size,
@@ -486,7 +484,7 @@ vc4_setup_slices(struct vc4_resource *rsc)
 
                 offset += slice->size;
 
-                if (miptree_debug) {
+                if (vc4_debug & VC4_DEBUG_SURFACE) {
                         static const char tiling_chars[] = {
                                 [VC4_TILING_FORMAT_LINEAR] = 'R',
                                 [VC4_TILING_FORMAT_LT] = 'L',
